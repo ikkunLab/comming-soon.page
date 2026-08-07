@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>BOOT SYSTEM</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* MATRIX */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* 中央UI */
+#container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 2;
+}
+
+/* LOADING */
+#loadingBox {
+  position: absolute;
+  z-index: 3;
+  color: #00fff2;
+  text-align: center;
+}
+
+#loadingText {
+  margin-bottom: 10px;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+#bar {
+  width: 320px;
+  height: 12px;
+  border: 1px solid #00fff2;
+  box-shadow: 0 0 10px #00fff2;
+}
+
+#progress {
+  height: 100%;
+  width: 0%;
+  background: #00fff2;
+  box-shadow: 0 0 15px #00fff2;
+}
+
+/* HELLO WORLD */
+h1 {
+  color: #00fff2;
+  font-size: 72px;
+  letter-spacing: 8px;
+  text-shadow:
+    0 0 10px #00fff2,
+    0 0 20px #00fff2,
+    0 0 40px #00fff2;
+
+  border-right: 3px solid #00fff2;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* COMING SOON */
+#soon {
+  margin-top: 18px;
+  font-size: 30px;
+  letter-spacing: 6px;
+  color: #00fff2;
+
+  opacity: 0;
+  text-shadow:
+    0 0 8px #00fff2,
+    0 0 20px #00fff2,
+    0 0 40px #00fff2;
+
+  transform: translateY(10px);
+  animation: blink 1.6s infinite ease-in-out;
+}
+
+@keyframes blink {
+  0%   { opacity: 0.3; transform: translateY(6px); }
+  50%  { opacity: 1;   transform: translateY(0px); }
+  100% { opacity: 0.3; transform: translateY(6px); }
+}
+
+/* SCAN */
+.scan {
+  position: fixed;
+  width: 100%;
+  height: 2px;
+  background: rgba(0,255,255,0.4);
+  animation: scan 3s linear infinite;
+  z-index: 3;
+}
+
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+<div class="scan"></div>
+
+<div id="container">
+
+  <div id="loadingBox">
+    <div id="loadingText">SYSTEM BOOTING...</div>
+    <div id="bar"><div id="progress"></div></div>
+  </div>
+
+</div>
+
+<script>
+/* =====================
+   LOADING
+===================== */
+let progress = 0;
+const bar = document.getElementById("progress");
+
+const load = setInterval(() => {
+  progress += Math.random() * 10;
+  if (progress > 100) progress = 100;
+
+  bar.style.width = progress + "%";
+
+  if (progress === 100) {
+    clearInterval(load);
+
+    setTimeout(() => {
+      document.getElementById("loadingBox").remove();
+      startBoot();
+    }, 400);
+  }
+}, 100);
+
+/* =====================
+   BOOT SEQUENCE
+===================== */
+function startBoot() {
+  const container = document.getElementById("container");
+
+  // HELLO WORLD生成（ここで初めて出現）
+  const h1 = document.createElement("h1");
+  container.appendChild(h1);
+
+  const text = "HELLO WORLD";
+  let i = 0;
+
+  function type() {
+    if (i < text.length) {
+      h1.innerHTML += text[i];
+      i++;
+      setTimeout(type, 110);
+    } else {
+      h1.style.borderRight = "none";
+      showComingSoon();
+    }
+  }
+
+  type();
+}
+
+/* =====================
+   COMING SOON
+===================== */
+function showComingSoon() {
+  setTimeout(() => {
+    const soon = document.createElement("div");
+    soon.id = "soon";
+    soon.innerText = "COMING SOON...";
+    document.getElementById("container").appendChild(soon);
+
+    setTimeout(() => {
+      soon.style.opacity = "1";
+      soon.style.transform = "translateY(0)";
+    }, 50);
+  }, 600);
+}
+
+/* =====================
+   MATRIX
+===================== */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const letters = "01HELLOWORLD";
+const fontSize = 14;
+const columns = canvas.width / fontSize;
+
+const drops = Array.from({ length: columns }).fill(1);
+
+function draw() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#00fff2";
+  ctx.font = fontSize + "px monospace";
+
+  for (let i = 0; i < drops.length; i++) {
+    const char = letters[Math.floor(Math.random() * letters.length)];
+    ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+
+    drops[i]++;
+  }
+}
+
+setInterval(draw, 33);
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
